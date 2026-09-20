@@ -29,14 +29,19 @@ SELECT customers.customerid,
        customers.customername,
        COUNT(orders.orderid) AS number_of_orders
 FROM customers
-INNER JOIN orders
+LEFT JOIN orders
 ON customers.customerid = orders.customerid
 GROUP BY customers.customerid, customers.customername
 ORDER BY number_of_orders DESC;
 
 
 4. What are the customers who have placed more than 3 orders?
-
+SELECT
+    CustomerID,
+    COUNT(OrderID) AS OrderCount    --Zählt, wie viele OrderID-Werte es pro Gruppe gibt unn gibt dieser berechneten Spalte den Namen OrderCount
+FROM orders
+GROUP BY CustomerID
+HAVING COUNT(OrderID) > 3;          --WHERE nicht erlaubt in Aggregatfunktion
 
 5. What are the top 5 most expensive products? Round the price to 2 decimal places.
 SELECT *
