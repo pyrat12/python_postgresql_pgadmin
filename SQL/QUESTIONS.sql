@@ -43,6 +43,7 @@ FROM orders
 GROUP BY CustomerID
 HAVING COUNT(OrderID) > 3;          --WHERE nicht erlaubt in Aggregatfunktion
 
+
 5. What are the top 5 most expensive products? Round the price to 2 decimal places.
 SELECT *
 FROM products
@@ -84,10 +85,30 @@ WHERE categoryid is NULL;
 -------+-----------+-------------+------------+------------+------+-------
 (0 rows)
 
+
 8. What are all orders and their employees?
+--Du musst Informationen aus orders mit den zugehörigen Informationen aus employees verbinden
+
+SELECT
+CAST(employees.employeeid AS TEXT) || ' ' || -- employeeid in Text umwandeln und konkatenieren
+employees.firstname || ' ' || -- Vorname konkatenieren
+employees.lastname AS Employee, -- Nachname konkatenieren. Somit sind alle 3 employee-Spalten konkateniert zu employee (meine eigene Idee)
+-- AS kommt hier direkt nach dem letzten zu aggregierenden Feld, danach das Komma
+orders.orderid
+FROM orders
+
+INNER JOIN employees
+    ON orders.employeeid = employees.employeeid;
 
 
 9. What is the average, minimum, and maximum price of products? Round the values to 2 decimal places.
+--In PostgreSQL funktioniert ROUND(..., 2) nur mit NUMERIC => CAST
+SELECT
+ROUND(CAST(MIN(price) AS NUMERIC), 2) AS "Minimum Price",  -- Unbedingt Doppelte Anführungszeichen verwenden!
+ROUND(CAST(MAX(price) AS NUMERIC), 2) AS "Maximum Price",
+ROUND(CAST(AVG(price) AS NUMERIC), 2) AS "Average Price"
+FROM products
+;
 
 
 10. What are the products with prices between 10 and 50? Round the price to 2 decimal places and sort the result by price in descending order.
@@ -97,6 +118,22 @@ WHERE price >= 10 AND price <= 50
 ORDER BY price DESC;
 
 11. What are the shippers and the total number of orders shipped by each shipper, including those with no orders?
+SELECT
+shippers.shippername,
+COUNT(orders.OrderID) AS "Total Orders"
+FROM shippers
+
+--Du willst also alle Zeilen aus shippers behalten, unabhängig davon, ob eine passende Order existiert
+--Behalte ALLES von der linken Tabelle (shippers). Suche dazu passende Zeilen aus der rechten Tabelle (orders)
+--Gibt es keine, bleibt der Shipper trotzdem im Ergebnis => LEFT JOIN
+--D.h. mit Left Join haben wir quasi links die Tabelle shippers und fügen hinzu werte (wo vorhanden) aus der rechten Tabelle orders
+
+LEFT JOIN orders
+    ON shippers.shipperid = orders.shipperid
+
+GROUP BY 
+shippers.shipperid,
+shippers.shippername;
 
 
 12. What are the employees who have processed > 5 orders? Sort the result by the number of orders in descending order.
