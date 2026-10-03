@@ -117,6 +117,7 @@ FROM products
 WHERE price >= 10 AND price <= 50
 ORDER BY price DESC;
 
+
 11. What are the shippers and the total number of orders shipped by each shipper, including those with no orders?
 SELECT
 shippers.shippername,
@@ -137,12 +138,74 @@ shippers.shippername;
 
 
 12. What are the employees who have processed > 5 orders? Sort the result by the number of orders in descending order.
+-- Denk an Aufgabe 11 zurück: COUNT(orders.orderid) zählt die Orders
+-- Aber jetzt willst du nicht alle Orders insgesamt zählen, sondern: Anzahl Orders pro Employee. Dafür sorgt GROUP BY
+-- COUNT() → Wie viele Orders?
+-- GROUP BY → Für wen separat zählen?
+-- WHERE ist hier falsch → du brauchst HAVING. Du willst nicht einzelne Orders filtern, sondern das Ergebnis von COUNT()
+
+SELECT
+employees.employeeid,
+employees.firstname,
+employees.lastname,
+COUNT(orders.orderid) AS "TotalOrdersPerEmployee"
+FROM employees
+
+INNER JOIN orders
+    ON employees.employeeid = orders.employeeid
+
+GROUP BY 
+employees.employeeid,
+employees.firstname,
+employees.lastname
+HAVING COUNT(orders.orderid) > 5 --In PostgreSQL kannst du den Alias "TotalOrdersPerEmployee" normalerweise nicht direkt in HAVING verwenden
+--Dort schreibst du die Aggregatfunktion nochmals
+
+ORDER BY "TotalOrdersPerEmployee" DESC;
+;
 
 
 13. What is the total revenue for each product within each order, including the product name and ordered by order ID and total revenue in descending order?
+-- orderdetails ist hier die Zwischentabelle, die Produkte mit Bestellungen verbindet
+-- Ein Produkt kann in vielen Orders vorkommen und eine Order kann viele Produkte enthalten → orderdetails bildet diese Zuordnung ab
+
+SELECT
+products.productid,
+products.productname,
+products.price,
+orders.orderid,
+products.price * orderdetails.quantity AS "Total Revenue"
+FROM products
+
+INNER JOIN orderdetails
+    ON products.productid = orderdetails.productid
+INNER JOIN orders
+    ON orderdetails.orderid = orders.orderid
+ORDER BY 
+orders.orderid DESC,
+"Total Revenue" DESC;
 
 
 14. What are the customers, employees, and the total number of orders placed by each customer?
+-- Ja, genau. Wieder 2 JOINs, weil du Daten aus 3 Tabellen brauchst und orders die Verbindung bildet
+
+SELECT
+customers.CustomerID,
+customers.contactname AS "customers",
+COUNT(orders.orderid) AS "totalorders",
+employees.firstname,
+employees.lastname
+FROM customers
+INNER JOIN orders
+    ON customers.customerid = orders.customerid
+INNER JOIN employees
+    ON orders.employeeid = employees.employeeid
+GROUP BY
+customers.CustomerID,
+customers.contactname,
+employees.firstname,
+employees.lastname
+;
 
 
 15. What are the products with an average price higher than the overall average product price? 
