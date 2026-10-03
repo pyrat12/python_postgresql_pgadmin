@@ -58,6 +58,22 @@ LIMIT 5;
 
 
 6. What are the order details (ProductID, Quantity) for customers from France?
+--Genau — direkt kannst du Customers nicht mit OrderDetails joinen, weil ihnen keine gemeinsame Schlüsselspalte fehlt
+--Du brauchst eine Zwischentabelle, die beide verbindet
+--Schau also, welche gemeinsame ID Customers mit Orders hat und welche gemeinsame ID Orders mit OrderDetails hat. Dann brauchst du zwei INNER JOINs!
+--Tabelle orders als BRÜCKE, auch wenn man sie gar nicht ausgeben will, da sie customerid und orderid enthält
+
+SELECT
+orderdetails.quantity,
+orderdetails.productid
+FROM customers
+
+INNER JOIN orders
+    ON customers.customerid = orders.customerid
+INNER JOIN orderdetails
+    ON orders.orderid = orderdetails.orderid
+WHERE country = 'France'
+;
 
 
 7. Area there products without a category assigned?
